@@ -49,7 +49,7 @@ class tictactoeFrame(wx.Frame):
 
 		for i in range(self.gridSize):
 			for j in range(self.gridSize):
-				button = wx.Button(panel,(i*self.gridSize+j),label="-",name = str(i)+str(j),size=(100,100))
+				button = wx.Button(panel,(i*self.gridSize+j),label="-",name = str(i)+str(j),size=(140,140))
 				button.Bind(wx.EVT_BUTTON,self.buttonClick)
 				self.gameButtons.append(button)
 				gameBox.Add(button,(i,j),(1,1),flag=wx.EXPAND,border=4)
@@ -59,24 +59,62 @@ class tictactoeFrame(wx.Frame):
 		#dispBox widgets
 		self.dispText = wx.StaticText(panel,-1,label="Player 1 turn",style=wx.CENTER)
 		l1=wx.StaticLine(panel,-1,style=wx.LI_HORIZONTAL)
+		l2=wx.StaticLine(panel,-1,style=wx.LI_HORIZONTAL)
 
 		self.player1Stat = wx.StaticText(panel,-1,label="Player 1 : 0 ",style=wx.CENTER)
 		self.player2Stat = wx.StaticText(panel,-1,label="Player 2 : 0 ",style=wx.RIGHT)
 
+		#Save details
 		self.saveFileName = wx.TextCtrl(panel,-1,value="Enter save file name",style = wx.CENTER|wx.EXPAND)
 		saveButton = wx.Button(panel,label="Save",style=wx.CENTER|wx.EXPAND)
 		saveButton.Bind(wx.EVT_BUTTON,self.saveButtonClick)
 
-		dispBox.Add(l1,(0,0),(1,2),flag=wx.EXPAND)
+		#Train details
+		trainLabel = wx.StaticText(panel,-1,label="TRAIN",style=wx.CENTER|wx.EXPAND)
+		numIterLabel = wx.StaticText(panel,-1,label="No. of Iterations :",style=wx.LEFT)
+		discountLabel = wx.StaticText(panel,-1,label="Discount :",style=wx.LEFT)
+		alphaLabel = wx.StaticText(panel,-1,label="Alpha :",style=wx.LEFT)
+		epsilonLabel = wx.StaticText(panel,-1,label="Epsilon :",style=wx.LEFT)
+
+		self.numIterEntry = wx.TextCtrl(panel,-1,value="1",style=wx.CENTER|wx.EXPAND)
+		self.discountEntry = wx.TextCtrl(panel,-1,value="0.01",style=wx.CENTER|wx.EXPAND)
+		self.alphaEntry = wx.TextCtrl(panel,-1,value="0.01",style=wx.CENTER|wx.EXPAND)
+		self.epsilonEntry = wx.TextCtrl(panel,-1,value="0.1",style=wx.CENTER|wx.EXPAND)
+
+		trainButton = wx.Button(panel,label="Train",style=wx.EXPAND|wx.CENTER)		
+		trainButton.Bind(wx.EVT_BUTTON, self.trainButtonClick)
+
+		dispBox.Add(l1,(0,0),(1,4),flag=wx.EXPAND)
 		dispBox.Add(self.dispText,(1,0),(2,2),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
-		dispBox.Add(self.player1Stat,(1,2),(1,1),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
-		dispBox.Add(self.player2Stat,(2,2),(1,1),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
+		dispBox.Add(self.player1Stat,(1,2),(1,2),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
+		dispBox.Add(self.player2Stat,(2,2),(1,2),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
 		
 		dispBox.Add(self.saveFileName,(4,0),(1,2),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
-		dispBox.Add(saveButton,(4,2),(1,1),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
+		dispBox.Add(saveButton,(4,2),(1,2),flag=wx.EXPAND|wx.ALL|wx.ALIGN_CENTER)
+		dispBox.Add(l2,(5,0),(1,4),flag=wx.EXPAND)
+
+		dispBox.Add(trainLabel,(6,0),(1,4),flag=wx.EXPAND|wx.CENTER)
+
+		dispBox.Add(numIterLabel,(7,0),(1,1),flag=wx.EXPAND|wx.LEFT)
+		dispBox.Add(self.numIterEntry,(7,1),(1,3),flag=wx.EXPAND|wx.CENTER)
+
+		dispBox.Add(discountLabel,(8,0),(1,1),flag=wx.EXPAND|wx.LEFT)
+		dispBox.Add(self.discountEntry,(8,1),(1,3),flag=wx.EXPAND|wx.CENTER)
+
+		dispBox.Add(alphaLabel,(9,0),(1,1),flag=wx.EXPAND|wx.LEFT)
+		dispBox.Add(self.alphaEntry,(9,1),(1,3),flag=wx.EXPAND|wx.CENTER)
+
+		dispBox.Add(epsilonLabel,(10,0),(1,1),flag=wx.EXPAND|wx.LEFT)
+		dispBox.Add(self.epsilonEntry,(10,1),(1,3),flag=wx.EXPAND|wx.CENTER)
+
+		dispBox.Add(trainButton,(11,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+
 
 		dispBox.AddGrowableCol(0)
 		dispBox.AddGrowableCol(1)
+		dispBox.AddGrowableCol(2)
+		dispBox.AddGrowableCol(3)
+
 
 
 
@@ -127,6 +165,22 @@ class tictactoeFrame(wx.Frame):
 			print "invalid action"
 			event.Skip()
 	
+	def trainButtonClick(self,event):
+
+		numIter = int(self.numIterEntry.GetValue())
+		alpha = float(self.alphaEntry.GetValue())
+		discount = float(self.discountEntry.GetValue())
+		epsilon = float(self.epsilonEntry.GetValue())
+
+		self.game.alpha = alpha
+		self.game.discount = discount
+		self.game.epsilon = epsilon
+
+		self.game.train(numIter)
+
+		return None
+
+
 	def nextButtonClick(self,event):
 
 		self.game.gameReset()
@@ -149,10 +203,8 @@ class tictactoeFrame(wx.Frame):
 	def saveButtonClick(self,event):
 		filename = self.saveFileName.GetValue()
 		pickle.dump(self.game.qvalues,open(filename,"wb"))
+		print "File saved at "+os.getcwd()
 		return None
-
-
-
 
 	def changePlayer(self,player):
 		if player==1:
@@ -232,12 +284,12 @@ class tictactoeFrameQLearning(tictactoeFrame):
 				self.player1Wins+=1
 				self.player1Stat.SetLabel("Player 1 : "+str(self.player1Wins))
 				self.game.update(self.game.previousState, self.game.previousAction, nextState, -100)
-				print self.game.qvalues
+				# print self.game.qvalues
 
 			elif self.game.gameWon()=="D":
 				self.game.update(self.game.previousState, self.game.previousAction, nextState, 50)
 				self.dispText.SetLabel("Match Drawn")
-				print self.game.qvalues
+				# print self.game.qvalues
 			else:
 				self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
 				self.dispText.SetLabel("Player 2 turn")
@@ -255,12 +307,12 @@ class tictactoeFrameQLearning(tictactoeFrame):
 					self.game.update(state,action,nextState,100)
 					self.player2Wins+=1
 					self.player2Stat.SetLabel("Player 2 : "+str(self.player2Wins))
-					print self.game.qvalues
+					# print self.game.qvalues
 
 				elif self.game.gameWon()=="D":
 					self.dispText.SetLabel("Match Drawn")
 					self.game.update(state,action,nextState,30)
-					print self.game.qvalues
+					# print self.game.qvalues
 
 				else:
 					self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)

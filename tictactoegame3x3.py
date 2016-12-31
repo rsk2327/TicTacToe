@@ -97,6 +97,9 @@ class QLearningAgent(tictactoe):
 		self.previousState=""
 		self.previousAction=-1
 
+		self.play1Wins=0
+		self.play2Wins=0
+
 
 	def getQValue(self,state,action):
 
@@ -182,4 +185,54 @@ class QLearningAgent(tictactoe):
 	def getValue(self,state):
 		return self.computeValueFromQValues(state)
         
+	def train(self,numIterations=10):
+
+		for i in range(numIterations):
+			while self.isActive==True:
+				possibleActions = self.getAvailableActions([])
+				player1Action = randint(0,len(possibleActions)-1)
+				
+				self.gridValues[player1Action]="X"
+				self.valuesEntered+=1
+				nextState = "".join(self.gridValues)
+
+				if self.gameWon()=="W":
+					self.play1Wins+=1
+					self.update(self.previousState , self.previousAction, nextState,-100)
+
+				elif self.gameWon()=="D":
+					self.update(self.previousState, self.previousAction, nextState, 50)
+				else:
+
+					state = "".join(self.gridValues)
+					action = self.getAction(state)
+
+					self.gridValues[action]="O"
+					self.valuesEntered+=1
+					nextState = "".join(self.gridValues)
+
+					if self.gameWon()=="W":
+						self.update(state,action,nextState,100)
+						self.play2Wins+=1
+					elif self.gameWon()=="D":
+						self.update(state,action,nextState,30)
+					else:
+						continue
+			self.gameReset()
+
+		print "After "+str(numIterations)+" rounds of training... "
+		print "Player 1 wins : "+ str(self.play1Wins)
+		print "Player 2 wins : "+ str(self.play2Wins)
+
+		print "Player 2 win ratio : "+ str(float(self.play2Wins)/(float(self.play2Wins)+float(self.play1Wins)))
+		
+
+		self.play1Wins=0
+		self.play2Wins=0
+
+
+
+		# print self.qvalues
+
+		return None
 
