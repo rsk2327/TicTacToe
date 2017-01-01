@@ -5,6 +5,17 @@ from string import *
 
 grid3List=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
 
+grid3CheckList=[[[1,2],[3,6],[4,8]],
+				[[0,2],[4,7]],
+				[[0,1],[5,8],[4,6]],
+				[[4,5],[0,6]],
+				[[3,5],[1,7],[0,8],[2,6]],
+				[[3,4],[2,8]],
+				[[7,8],[0,3],[2,4]],
+				[[6,8],[1,4]],
+				[[6,7],[2,5],[0,4]]]
+
+
 class tictactoe():
 	""" Base class """
 
@@ -54,6 +65,7 @@ class tictactoe():
 		for i in range(self.gridSize**2):
 			self.gridValues[i]='-'
 
+
 		return None
 
 	def getAvailableActions(self,state):
@@ -62,7 +74,7 @@ class tictactoe():
 			possibleActions=[]
 
 			for i in range(self.gridSize**2):
-				if self.gridValues[i]=='-':
+				if state[i]=='-':
 					possibleActions.append(i)
 			return possibleActions
 		else:
@@ -75,11 +87,27 @@ class RandomAction(tictactoe):
 		tictactoe.__init__(self,gridSize)
 
 		
+	def finishingMove(self,state):
 
+		moves=[]
 
-	def takeAction(self):
+		for i in range(9):
+			for action in grid3CheckList[i]:
+				val1,val2 = action[0],action[1]
+				if state[val1]==state[val2] and state[val1]=="X":
+					moves.append(i)
+					break
 
-		possibleActions = self.getAvailableActions()
+		if len(moves)>1:
+			return choice(moves)
+		elif len(moves)==1:
+			return moves[0]
+		else:
+			return None
+
+	def takeAction(self,state):
+
+		possibleActions = self.getAvailableActions(state)
 		randomAction = randint(0,len(possibleActions)-1)
 
 		return possibleActions[randomAction]
@@ -184,47 +212,168 @@ class QLearningAgent(tictactoe):
 
 	def getValue(self,state):
 		return self.computeValueFromQValues(state)
-        
-	def train(self,numIterations=10):
+
+	def gameReset2(self):
+		self.gameReset()
+
+		self.previousAction=-1
+		self.previousState=""
+		self.rival.previousAction=-1
+		self.rival.previousState=""
+
+      
+
+	def train(self,numIterations=10,agent="Random"):
+
+		#initializing opponent
+		self.rival = QLearningAgent(3)
 
 		for i in range(numIterations):
-			while self.isActive==True:
-				possibleActions = self.getAvailableActions([])
-				player1Action = randint(0,len(possibleActions)-1)
-				
-				self.gridValues[player1Action]="X"
-				self.valuesEntered+=1
-				nextState = "".join(self.gridValues)
-
-				if self.gameWon()=="W":
-					self.play1Wins+=1
-					self.update(self.previousState , self.previousAction, nextState,-100)
-
-				elif self.gameWon()=="D":
-					self.update(self.previousState, self.previousAction, nextState, 50)
-				else:
-
+			if agent=="Random":
+				while self.isActive==True:
 					state = "".join(self.gridValues)
-					action = self.getAction(state)
 
-					self.gridValues[action]="O"
+					randomRival = RandomAction(3)
+					
+					player1Action = randomRival.takeAction(state)
+					
+					nextState = "".join(self.gridValues) #positioning of this line here or after line 197 matters
+					self.gridValues[player1Action]="X"
 					self.valuesEntered+=1
-					nextState = "".join(self.gridValues)
+					
 
 					if self.gameWon()=="W":
-						self.update(state,action,nextState,100)
-						self.play2Wins+=1
+						self.play1Wins+=1
+						self.update(self.previousState , self.previousAction, nextState,-150)
+
 					elif self.gameWon()=="D":
-						self.update(state,action,nextState,30)
+						self.update(self.previousState, self.previousAction, nextState, 60)
 					else:
-						continue
-			self.gameReset()
+						self.update(self.previousState, self.previousAction, nextState, 30) #living reward
+
+						state = "".join(self.gridValues)
+						action = self.getAction(state)
+
+						self.gridValues[action]="O"
+						self.valuesEntered+=1
+						nextState = "".join(self.gridValues)
+
+						if self.gameWon()=="W":
+							self.update(state,action,nextState,100)
+							self.play2Wins+=1
+						elif self.gameWon()=="D":
+							self.update(state,action,nextState,60)
+						else:
+							continue
+				self.gameReset2()
+			elif agent=="Random2":
+				while self.isActive==True:
+					state = "".join(self.gridValues)
+
+					randomRival = RandomAction(3)
+					player1Action = randomRival.takeAction(state)
+
+					finishingMove = randomRival.finishingMove(state)
+					if finishingMove!=None:
+						player1Action = finishingMove
+					
+					nextState = "".join(self.gridValues) #positioning of this line here or after line 197 matters
+					self.gridValues[player1Action]="X"
+					self.valuesEntered+=1
+					
+
+					if self.gameWon()=="W":
+						self.play1Wins+=1
+						self.update(self.previousState , self.previousAction, nextState,-150)
+
+					elif self.gameWon()=="D":
+						self.update(self.previousState, self.previousAction, nextState, 60)
+					else:
+						self.update(self.previousState, self.previousAction, nextState, 30) #living reward
+
+						state = "".join(self.gridValues)
+						action = self.getAction(state)
+
+						self.gridValues[action]="O"
+						self.valuesEntered+=1
+						nextState = "".join(self.gridValues)
+
+						if self.gameWon()=="W":
+							self.update(state,action,nextState,100)
+							self.play2Wins+=1
+						elif self.gameWon()=="D":
+							self.update(state,action,nextState,60)
+						else:
+							continue
+				self.gameReset2()
+
+			else:
+				while self.isActive==True:
+					# print "reached"
+					rivalState = "".join(self.gridValues)
+					rivalAction = self.rival.getAction(rivalState)
+					# print "rivalState :"
+					# prettyPrint(rivalState)
+					# print rivalAction
+
+					nextState = "".join(self.gridValues)
+					self.gridValues[rivalAction]="X"
+					self.valuesEntered+=1
+					rivalNextState = "".join(self.gridValues)
+
+					# print "new rival state:"
+					# prettyPrint(rivalNextState)
+					# print "xxxxxxxxxxxxxxxxxxxxxxxx"
+
+					if self.gameWon()=="W":
+						#rival wins
+
+						self.rival.update(rivalState,rivalAction,rivalNextState,100)
+						self.update(self.previousState,self.previousAction,nextState,-150)
+						self.play1Wins+=1
+					elif self.gameWon()=="D":
+						self.rival.update(rivalState,rivalAction,rivalNextState,60)
+						self.update(self.previousState,self.previousAction,nextState,60)
+					else:
+						#players turn
+
+						self.update(self.previousState, self.previousAction, nextState, 30) #living reward
+
+						state = "".join(self.gridValues)
+						action = self.getAction(state)
+						# print "player2 turn"
+						# print "player2 state:"
+						# prettyPrint(state)
+						# print action
+						
+
+						self.gridValues[action]="O"
+						self.valuesEntered+=1
+						nextState = "".join(self.gridValues)
+						# print "player 2 new state"
+						# prettyPrint(nextState)
+						# print "_________________"
+						if self.gameWon()=="W":
+							self.update(state,action,nextState,100)
+							self.play2Wins+=1
+							self.rival.update(self.rival.previousState, self.previousAction,state,-150)
+						elif self.gameWon()=="D":
+							self.update(state,action,nextState,60)
+							self.rival.update(self.rival.previousState, self.previousAction,state,60)
+						else:
+							self.rival.update(self.rival.previousState, self.previousAction,state,30) #living reward for rival
+				self.gameReset2()
+
+
+
+
 
 		print "After "+str(numIterations)+" rounds of training... "
 		print "Player 1 wins : "+ str(self.play1Wins)
 		print "Player 2 wins : "+ str(self.play2Wins)
 
-		print "Player 2 win ratio : "+ str(float(self.play2Wins)/(float(self.play2Wins)+float(self.play1Wins)))
+		if self.play2Wins!=0:
+			print "Player 2 win ratio : "+ str(float(self.play2Wins)/(float(self.play2Wins)+float(self.play1Wins)))
 		
 
 		self.play1Wins=0
@@ -236,3 +385,8 @@ class QLearningAgent(tictactoe):
 
 		return None
 
+
+def prettyPrint(state):
+	print state[0:3]
+	print state[3:6]
+	print state[6:9]
