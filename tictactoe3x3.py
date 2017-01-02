@@ -182,13 +182,9 @@ class tictactoeFrame(wx.Frame):
 		self.game.alpha = alpha
 		self.game.discount = discount
 		self.game.epsilon = epsilon
+		trainOption = self.trainOptionBox.GetValue()
 
-		if self.trainOptionBox.GetValue()=="Random":
-			self.game.train(numIter,"Random")
-		elif self.trainOptionBox.GetValue()=="Random2":
-			self.game.train(numIter,"Random2")
-		else:
-			self.game.train(numIter,"QLearningAgent")
+		self.game.train(numIter,trainOption)
 
 		return None
 

@@ -230,7 +230,9 @@ class QLearningAgent(tictactoe):
 
 		for i in range(numIterations):
 			if agent=="Random":
+				# print "Reached Random"
 				while self.isActive==True:
+					
 					state = "".join(self.gridValues)
 
 					randomRival = RandomAction(3)
@@ -267,6 +269,7 @@ class QLearningAgent(tictactoe):
 							continue
 				self.gameReset2()
 			elif agent=="Random2":
+				# print "Reached Random2"
 				while self.isActive==True:
 					state = "".join(self.gridValues)
 
