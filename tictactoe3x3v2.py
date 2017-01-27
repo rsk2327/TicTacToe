@@ -181,23 +181,11 @@ class tictactoeFrame(wx.Frame):
 		discount = float(self.discountEntry.GetValue())
 		epsilon = float(self.epsilonEntry.GetValue())
 
-		if alpha ==-1:
-			self.game.verbose=1
-		elif alpha == -2:
-			self.game.verbose=0
-		else:
-			self.game.player2.alpha = alpha
-
+		self.game.player2.alpha = alpha
 		self.game.player2.discount = discount
 		self.game.player2.epsilon = epsilon
 		trainOption = self.trainOptionBox.GetValue()
 
-		if trainOption == "Random":
-			self.game.player1 = RandomAction()
-		elif trainOption == "Random2":
-			self.game.player1 = RandomAction2()
-		elif trainOption == "QLearningAgent":
-			self.game.player1 = QLearningAgent()
 
 		player1Wins=0
 		player2Wins=0
@@ -217,7 +205,7 @@ class tictactoeFrame(wx.Frame):
 		if player2Wins!=0:
 			print "Player 2 win ratio : "+ str(float(player2Wins)/(float(player2Wins)+float(player1Wins)))
 
-		print len(self.game.player2.qvalues)
+
 
 		return None
 
@@ -245,12 +233,12 @@ class tictactoeFrame(wx.Frame):
 		filename = self.saveFileName.GetValue()
 		qvalues = pickle.load(open(filename,"rb"))
 		self.saveFileName.SetValue("")
-		self.game.player2.qvalues = qvalues
+		self.game.qvalues = qvalues
 		print qvalues
 
 	def saveButtonClick(self,event):
 		filename = self.saveFileName.GetValue()
-		pickle.dump(self.game.player2.qvalues,open(filename,"wb"))
+		pickle.dump(self.game.qvalues,open(filename,"wb"))
 		print "File saved at "+os.getcwd()
 		return None
 
@@ -320,7 +308,7 @@ class tictactoeFrameQLearning(tictactoeFrame):
 		id = event.GetId()
 
 		if event.GetEventObject().GetLabel()=="-" and self.game.isActive==True:
-			print len(self.game.player2.qvalues)
+			
 			
 			state = "".join(self.game.gridValues)	#positioning of this line here or after line 280 matters
 			event.GetEventObject().SetLabel("X")
@@ -332,13 +320,11 @@ class tictactoeFrameQLearning(tictactoeFrame):
 				self.dispText.SetLabel("Player 1 won")
 				self.player1Wins+=1
 				self.player1Stat.SetLabel("Player 1 : "+str(self.player1Wins))
-				self.stateValues(self.game.player2.previousState)
+				# self.stateValues(self.game.previousState)
 				self.game.player2.update("L",state, -150)
 
 				self.prettyPrint(self.game.player2.previousState)
-				self.prettyPrint(state)
-				self.stateValues(self.game.player2.previousState)
-				
+				self.prettyPrint(newState)
 				print self.game.player2.previousAction
 				print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
 				# print self.game.qvalues
@@ -348,11 +334,10 @@ class tictactoeFrameQLearning(tictactoeFrame):
 				self.dispText.SetLabel("Match Drawn")
 				# print self.game.qvalues
 			else:
-				print "here"
-				self.stateValues(self.game.player2.previousState)
-				self.game.player2.update("C",state, 30) #living reward
+				# self.stateValues(self.game.previousState)
+				# self.game.player2.update("C",nextState, 30) #living reward
 				self.prettyPrint(self.game.player2.previousState)
-				self.prettyPrint(state)
+				self.prettyPrint(newState)
 				print self.game.player2.previousAction
 				print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
 
@@ -380,6 +365,7 @@ class tictactoeFrameQLearning(tictactoeFrame):
 					# print self.game.qvalues
 
 				else:
+					self.game.player2.update("C",newState,30)
 					self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
 					self.dispText.SetLabel("Player 1 turn")
 		else:
@@ -394,8 +380,8 @@ class tictactoeFrameQLearning(tictactoeFrame):
 	def stateValues(self,state):
 
 		for i in range(9):
-			if self.game.player2.qvalues.has_key((state,i)):
-				print "For action : "+str(i)+" QValue is : " + str(self.game.player2.qvalues[(state,i)])
+			if self.game.qvalues.has_key((state,i)):
+				print "For action : "+str(i)+" QValue is : " + str(self.game.qvalues[(state,i)])
 
 if __name__ == '__main__':
   

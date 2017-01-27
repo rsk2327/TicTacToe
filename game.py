@@ -6,7 +6,6 @@ import util
 
 grid3List=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
 
-
 grid3CheckList=[[[1,2],[3,6],[4,8]],
 				[[0,2],[4,7]],
 				[[0,1],[5,8],[4,6]],
@@ -17,46 +16,16 @@ grid3CheckList=[[[1,2],[3,6],[4,8]],
 				[[6,8],[1,4]],
 				[[6,7],[2,5],[0,4]]]
 
-grid4List2 = [[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],
-			 [0,4,8,12],[1,5,9,13],[2,6,10,14],[3,7,11,15],
-			 [0,5,10,15],[3,6,9,12]]
-
-grid4List = [[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],
-			 [0,4,8,12],[1,5,9,13],[2,6,10,14],[3,7,11,15],
-			 [0,5,10,15],[3,6,9,12]]
-
-grid4CheckList=[]
-
-def run4list():
-
-	for i in range(16):
-		checkList=[]
-
-		for j in grid4List2:
-			if i in j:
-				k = j
-				k.remove(i)
-				checkList.append(k)
-
-		grid4CheckList.append(checkList)
-		checkList=[]
-
-	return
 
 class Game():
 
 	def __init__(self,gridSize=3):
 
-		print "gridSize :" + str(gridSize)
-		self.player1 = RandomAction(gridSize)
-		self.player2 = QLearningAgent2(gridSize)
+		self.player1 = RandomAction(3)
+		self.player2 = QLearningAgent(3)
 		self.gridSize = gridSize
 		self.valuesEntered=0
 		self.isActive=True
-		self.verbose=0
-
-		run4list()
-		
 
 		self.player1Wins=0
 		self.player2Wins=0
@@ -86,21 +55,6 @@ class Game():
 				return "D"
 			else:
 				return "L"
-		elif self.gridSize==4:
-
-			for i in range(len(grid4List)):
-				checkList = grid4List[i]
-				
-				val1,val2,val3,val4 = self.gridValues[checkList[0]],self.gridValues[checkList[1]],self.gridValues[checkList[2]],self.gridValues[checkList[3]]
-				if (val1==val2 and val2==val3 and val3==val4 and val1!="-"):
-					self.isActive=False		
-					return "W"
-
-			if self.valuesEntered==self.gridSize**2:
-				self.isActive=False
-				return "D"
-			else:
-				return "L"
 
 
 	def gameReset(self):
@@ -112,8 +66,6 @@ class Game():
 		for i in range(self.gridSize**2):
 			self.gridValues[i]='-'
 
-		self.player2.previousState=""
-		self.player2.previousAction=-1
 
 		return None
 
@@ -122,7 +74,6 @@ class Game():
 
 	def train(self):
 
-		
 		while self.isActive==True:
 
 			state = "".join(self.gridValues)
@@ -132,10 +83,6 @@ class Game():
 			newState = "".join(self.gridValues)
 			winner=0   #winner = 0 means match was a draw
 
-			if self.verbose==1:
-				print "old state : " + state
-				print "action player 1 : " + str(player1Action)
-				print "new state : " + newState
 			if self.gameWon()=="W":
 				self.player1Wins+=1
 				self.player1.update("W",newState,100)
@@ -146,18 +93,13 @@ class Game():
 				self.player2.update("D",state,60)
 			else:
 
-				self.player2.update("C",state,30)
+				self.player1.update("C",newState,30)
 
 				state = newState
 				player2Action = self.player2.getAction(state)
-				self.gridValues[player2Action]="O"
+				self.gridValues[player2Action]="0"
 				self.valuesEntered+=1
 				newState = "".join(self.gridValues)
-
-				if self.verbose==1:
-					print "old state : " + state
-					print "action player 2 : " + str(player2Action)
-					print "new state : " + newState
 
 				if self.gameWon()=="W":
 					self.player2Wins+=1
@@ -168,7 +110,7 @@ class Game():
 					self.player1.update("D",state,60)
 					self.player2.update("D",newState,60)
 				else:
-					self.player1.update("C",state,30)
+					self.player2.update("C",newState,30)
 
 		self.gameReset()
 

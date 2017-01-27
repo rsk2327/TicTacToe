@@ -241,6 +241,7 @@ class tictactoeFrameRandom(tictactoeFrame):
 		id = event.GetId()
 
 		if event.GetEventObject().GetLabel()=="-" and self.game.isActive==True:
+
 			if self.game.currentPlayer==1:
 				event.GetEventObject().SetLabel("X")
 				self.game.gridValues[id]="X"
@@ -287,7 +288,7 @@ class tictactoeFrameQLearning(tictactoeFrame):
 		id = event.GetId()
 
 		if event.GetEventObject().GetLabel()=="-" and self.game.isActive==True:
-			
+			print "Size of qvalues : " + str(len(self.game.qvalues))
 			
 			nextState = "".join(self.game.gridValues)	#positioning of this line here or after line 280 matters
 			event.GetEventObject().SetLabel("X")

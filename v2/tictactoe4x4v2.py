@@ -15,11 +15,12 @@ class tictactoeFrame(wx.Frame):
 	def __init__(self,parent,title):
 		super(tictactoeFrame,self).__init__(parent,title=title)
 
-		self.game = Game(3)
+		self.game = Game(4)
 		self.player1Wins=0
 		self.player2Wins=0
+		self.gridSize=4
 
-		self.InitUI(3)
+		self.InitUI(4)
 		self.Centre()
 		self.Show()
 
@@ -193,11 +194,11 @@ class tictactoeFrame(wx.Frame):
 		trainOption = self.trainOptionBox.GetValue()
 
 		if trainOption == "Random":
-			self.game.player1 = RandomAction()
+			self.game.player1 = RandomAction(self.gridSize)
 		elif trainOption == "Random2":
-			self.game.player1 = RandomAction2()
+			self.game.player1 = RandomAction2(self.gridSize)
 		elif trainOption == "QLearningAgent":
-			self.game.player1 = QLearningAgent()
+			self.game.player1 = QLearningAgent(self.gridSize)
 
 		player1Wins=0
 		player2Wins=0
@@ -267,7 +268,7 @@ class tictactoeFrameRandom(tictactoeFrame):
 	def __init__(self,parent,title):
 		tictactoeFrame.__init__(self,parent,title)
 
-		self.game = RandomAction(3)
+		self.game = RandomAction(4)
 
 	def buttonClick(self,event):
 		print "id is "+str(event.GetId())
@@ -387,13 +388,14 @@ class tictactoeFrameQLearning(tictactoeFrame):
 			event.Skip()
 	
 	def prettyPrint(self,state):
-		print state[0:3]
-		print state[3:6]
-		print state[6:9]
+		print state[0:4]
+		print state[4:8]
+		print state[8:12]
+		print state[12:16]
 
 	def stateValues(self,state):
 
-		for i in range(9):
+		for i in range(16):
 			if self.game.player2.qvalues.has_key((state,i)):
 				print "For action : "+str(i)+" QValue is : " + str(self.game.player2.qvalues[(state,i)])
 
