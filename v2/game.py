@@ -49,7 +49,7 @@ class Game():
 
 		print "gridSize :" + str(gridSize)
 		self.player1 = RandomAction(gridSize)
-		self.player2 = QLearningAgent2(gridSize)
+		self.player2 = QLearningAgent(gridSize) #the type of agent that you are training
 		self.gridSize = gridSize
 		self.valuesEntered=0
 		self.isActive=True
@@ -117,7 +117,12 @@ class Game():
 
 		return None
 
-	
+	def prettyPrint(self,state):
+
+		for i in range(self.gridSize):
+			print(state[i*self.gridSize:(i+1)*self.gridSize])
+
+		return None
 
 
 	def train(self):
@@ -133,9 +138,9 @@ class Game():
 			winner=0   #winner = 0 means match was a draw
 
 			if self.verbose==1:
-				print "old state : " + state
 				print "action player 1 : " + str(player1Action)
-				print "new state : " + newState
+				self.prettyPrint(newState)
+				print "***************"
 			if self.gameWon()=="W":
 				self.player1Wins+=1
 				self.player1.update("W",newState,100)
@@ -155,9 +160,9 @@ class Game():
 				newState = "".join(self.gridValues)
 
 				if self.verbose==1:
-					print "old state : " + state
 					print "action player 2 : " + str(player2Action)
-					print "new state : " + newState
+					self.prettyPrint(newState)
+					print "***************"
 
 				if self.gameWon()=="W":
 					self.player2Wins+=1

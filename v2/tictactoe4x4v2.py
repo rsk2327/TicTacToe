@@ -52,7 +52,7 @@ class tictactoeFrame(wx.Frame):
 
 		for i in range(self.gridSize):
 			for j in range(self.gridSize):
-				button = wx.Button(panel,(i*self.gridSize+j),label="-",name = str(i)+str(j),size=(160,160))
+				button = wx.Button(panel,(i*self.gridSize+j),label="-",name = str(i)+str(j),size=(140,140))
 				button.Bind(wx.EVT_BUTTON,self.buttonClick)
 				self.gameButtons.append(button)
 				gameBox.Add(button,(i,j),(1,1),flag=wx.EXPAND,border=4)
@@ -85,6 +85,7 @@ class tictactoeFrame(wx.Frame):
 		self.discountEntry = wx.TextCtrl(panel,-1,value="0.01",style=wx.CENTER|wx.EXPAND)
 		self.alphaEntry = wx.TextCtrl(panel,-1,value="0.001",style=wx.CENTER|wx.EXPAND)
 		self.epsilonEntry = wx.TextCtrl(panel,-1,value="0.6",style=wx.CENTER|wx.EXPAND)
+		self.debugCheckbox = wx.CheckBox(panel,-1,label="Debug",style=wx.LEFT)
 
 		trainOptions=["Random","Random2","QLearningAgent"]
 		self.trainOptionBox = wx.ComboBox(panel,value="Random",choices=trainOptions,style = wx.CB_READONLY|wx.EXPAND)
@@ -117,8 +118,10 @@ class tictactoeFrame(wx.Frame):
 		dispBox.Add(epsilonLabel,(10,0),(1,1),flag=wx.EXPAND|wx.LEFT)
 		dispBox.Add(self.epsilonEntry,(10,1),(1,3),flag=wx.EXPAND|wx.CENTER)
 
-		dispBox.Add(self.trainOptionBox,(11,1),(1,2),flag = wx.CENTER|wx.EXPAND)
-		dispBox.Add(trainButton,(11,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+		dispBox.Add(self.debugCheckbox,(11,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+
+		dispBox.Add(self.trainOptionBox,(12,1),(1,2),flag = wx.CENTER|wx.EXPAND)
+		dispBox.Add(trainButton,(12,3),(1,1),flag = wx.CENTER|wx.EXPAND)
 
 
 		dispBox.AddGrowableCol(0)
@@ -182,12 +185,10 @@ class tictactoeFrame(wx.Frame):
 		discount = float(self.discountEntry.GetValue())
 		epsilon = float(self.epsilonEntry.GetValue())
 
-		if alpha ==-1:
+		if self.debugCheckbox.GetValue()==True and numIter<=5:
 			self.game.verbose=1
-		elif alpha == -2:
-			self.game.verbose=0
 		else:
-			self.game.player2.alpha = alpha
+			self.game.verbose=0
 
 		self.game.player2.discount = discount
 		self.game.player2.epsilon = epsilon

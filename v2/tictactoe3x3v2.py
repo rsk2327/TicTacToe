@@ -79,11 +79,13 @@ class tictactoeFrame(wx.Frame):
 		discountLabel = wx.StaticText(panel,-1,label="Discount :",style=wx.LEFT)
 		alphaLabel = wx.StaticText(panel,-1,label="Alpha :",style=wx.LEFT)
 		epsilonLabel = wx.StaticText(panel,-1,label="Epsilon :",style=wx.LEFT)
+		# verboseLabel  = wx.StaticText(panel,-1,label="Label :",style=wx.LEFT)
 
 		self.numIterEntry = wx.TextCtrl(panel,-1,value="1",style=wx.CENTER|wx.EXPAND)
 		self.discountEntry = wx.TextCtrl(panel,-1,value="0.01",style=wx.CENTER|wx.EXPAND)
 		self.alphaEntry = wx.TextCtrl(panel,-1,value="0.001",style=wx.CENTER|wx.EXPAND)
 		self.epsilonEntry = wx.TextCtrl(panel,-1,value="0.6",style=wx.CENTER|wx.EXPAND)
+		self.debugCheckbox = wx.CheckBox(panel,-1,label="Debug",style=wx.LEFT)
 
 		trainOptions=["Random","Random2","QLearningAgent"]
 		self.trainOptionBox = wx.ComboBox(panel,value="Random",choices=trainOptions,style = wx.CB_READONLY|wx.EXPAND)
@@ -116,8 +118,12 @@ class tictactoeFrame(wx.Frame):
 		dispBox.Add(epsilonLabel,(10,0),(1,1),flag=wx.EXPAND|wx.LEFT)
 		dispBox.Add(self.epsilonEntry,(10,1),(1,3),flag=wx.EXPAND|wx.CENTER)
 
-		dispBox.Add(self.trainOptionBox,(11,1),(1,2),flag = wx.CENTER|wx.EXPAND)
-		dispBox.Add(trainButton,(11,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+		dispBox.Add(self.debugCheckbox,(11,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+
+		dispBox.Add(self.trainOptionBox,(12,1),(1,2),flag = wx.CENTER|wx.EXPAND)
+		dispBox.Add(trainButton,(12,3),(1,1),flag = wx.CENTER|wx.EXPAND)
+
+
 
 
 		dispBox.AddGrowableCol(0)
@@ -181,12 +187,10 @@ class tictactoeFrame(wx.Frame):
 		discount = float(self.discountEntry.GetValue())
 		epsilon = float(self.epsilonEntry.GetValue())
 
-		if alpha ==-1:
+		if self.debugCheckbox.GetValue()==True and numIter<=5:
 			self.game.verbose=1
-		elif alpha == -2:
-			self.game.verbose=0
 		else:
-			self.game.player2.alpha = alpha
+			self.game.verbose=0
 
 		self.game.player2.discount = discount
 		self.game.player2.epsilon = epsilon
@@ -250,7 +254,12 @@ class tictactoeFrame(wx.Frame):
 
 	def saveButtonClick(self,event):
 		filename = self.saveFileName.GetValue()
-		pickle.dump(self.game.player2.qvalues,open(filename,"wb"))
+
+		if self.game.player2.__class__.__name__=="ApproxQLearningAgent":
+			pickle.dump(self.game.player2.weights,open(filename,"wb"))
+		else:
+			pickle.dump(self.game.player2.qvalues,open(filename,"wb"))
+
 		print "File saved at "+os.getcwd()
 		return None
 
@@ -392,7 +401,187 @@ class tictactoeFrameQLearning(tictactoeFrame):
 		print state[6:9]
 
 	def stateValues(self,state):
+		for i in range(9):
+			if self.game.player2.qvalues.has_key((state,i)):
+				print "For action : "+str(i)+" QValue is : " + str(self.game.player2.qvalues[(state,i)])
 
+
+
+class tictactoeFrameApproxQLearning(tictactoeFrame):
+
+	def __init__(self,parent,title):
+		tictactoeFrame.__init__(self,parent,title)
+
+		
+
+	def buttonClick(self,event):
+		print "id is "+str(event.GetId())
+		id = event.GetId()
+
+		if event.GetEventObject().GetLabel()=="-" and self.game.isActive==True:
+			print len(self.game.player2.qvalues)
+			
+			state = "".join(self.game.gridValues)	#positioning of this line here or after line 280 matters
+			event.GetEventObject().SetLabel("X")
+			self.game.gridValues[id]="X"
+			self.game.valuesEntered+=1
+			newState = "".join(self.game.gridValues)
+
+			if self.game.gameWon()=="W":
+				self.dispText.SetLabel("Player 1 won")
+				self.player1Wins+=1
+				self.player1Stat.SetLabel("Player 1 : "+str(self.player1Wins))
+				
+				self.game.player2.update("L",state, -150)
+
+				
+
+			elif self.game.gameWon()=="D":
+				self.game.player2.update("D",state, 60)
+				self.dispText.SetLabel("Match Drawn")
+			else:
+
+				currentWeights = self.game.player2.weights[:]
+
+				self.game.player2.update("C",state, 30) #living reward
+				
+				
+				# self.diffWeights(currentWeights)
+				# self.printWeights2(currentWeights)
+				# self.printWeights()
+				# self.printFeatures(state)
+				
+
+				self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
+				self.dispText.SetLabel("Player 2 turn")
+
+				state = "".join(self.game.gridValues)
+				action = self.game.player2.getAction(state)
+
+				# self.printWeights()
+				# self.printFeatures(state)
+				
+				# self.stateValues2(state)
+
+
+
+
+				self.gameButtons[action].SetLabel("O")
+				self.game.gridValues[action]="O"
+				self.game.valuesEntered+=1
+				newState = "".join(self.game.gridValues)
+
+				if self.game.gameWon()=="W":
+					self.dispText.SetLabel("Player 2 won")
+					self.game.player2.update("W",newState,100)
+					self.player2Wins+=1
+					self.player2Stat.SetLabel("Player 2 : "+str(self.player2Wins))
+					# self.diffWeights(currentWeights)
+					# self.printWeights2(currentWeights)
+					# self.printWeights()
+					# self.printFeatures(state)
+					
+
+				elif self.game.gameWon()=="D":
+					self.dispText.SetLabel("Match Drawn")
+					self.game.player2.update("D",newState,60)
+					# self.diffWeights(currentWeights)
+					# self.printWeights2(currentWeights)
+					# self.printWeights()
+					# self.printFeatures(state)
+					
+
+				else:
+					self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
+					self.dispText.SetLabel("Player 1 turn")
+					
+		else:
+			print "invalid action"
+			event.Skip()
+	
+	def printFeatures(self,state):
+
+		features = self.game.player2.getFeatures(state,self.game.player2.previousAction)
+
+		print "################  Features ######################3"
+		print "Singleton featuers"
+		print features[0:9]
+		# print "Winning position for player"
+		# print features[9:18]
+		# print "Winning position for opponent"
+		# print features[18:27]
+		# print "Winning move"
+		# print features[27:29]
+		# print "Winning position for player"
+		# print features[29:38]
+		# print "Winning position for opponent"
+		# print features[38:47]
+
+
+	def diffWeights(self,currentWeights):
+
+		diff=[]
+
+		print sum(self.game.player2.weights)
+		print sum(currentWeights)
+		for i in range(len(currentWeights)):
+			diff.append(self.game.player2.weights[i] - currentWeights[i])
+
+		print "################  DIFF in features ######################3"
+		print "Singleton featuers"
+		print [round(i,2) for i in diff[0:9]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in diff[9:18]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in diff[18:27]]
+		# print "Winning move"
+		# print [round(i,2) for i in diff[27:29]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in diff[29:38]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in diff[38:47]]
+
+	def printWeights2(self,currentWeights):
+
+		print "Singleton featuers"
+		print [round(i,2) for i in currentWeights[0:9]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in currentWeights[9:18]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in currentWeights[18:27]]
+		# print "Winning move"
+		# print [round(i,2) for i in currentWeights[27:29]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in currentWeights[29:38]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in currentWeights[38:47]]
+
+	def printWeights(self):
+
+		print "################  Weights ######################3"
+		print "Singleton featuers"
+		print [round(i,2) for i in self.game.player2.weights[0:9]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in self.game.player2.weights[9:18]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in self.game.player2.weights[18:27]]
+		# print "Winning move"
+		# print [round(i,2) for i in self.game.player2.weights[27:29]]
+		# print "Winning position for player"
+		# print [round(i,2) for i in self.game.player2.weights[29:38]]
+		# print "Winning position for opponent"
+		# print [round(i,2) for i in self.game.player2.weights[38:47]]
+
+	def prettyPrint(self):
+		print self.game.gridValues[0:3]
+		print self.game.gridValues[3:6]
+		print self.game.gridValues[6:9]
+
+	def stateValues2(self,state):
+		for i in range(9):
+			print "For action : "+str(i)+" QValue is : " + str(self.game.player2.getQValue(state,i))
+
+	def stateValues(self,state):
 		for i in range(9):
 			if self.game.player2.qvalues.has_key((state,i)):
 				print "For action : "+str(i)+" QValue is : " + str(self.game.player2.qvalues[(state,i)])
@@ -400,7 +589,7 @@ class tictactoeFrameQLearning(tictactoeFrame):
 if __name__ == '__main__':
   
     app = wx.App()
-    tictactoeFrameQLearning(None, title='Tic Tac Toe')
+    tictactoeFrameApproxQLearning(None, title='Tic Tac Toe')
     app.MainLoop()
 
 
