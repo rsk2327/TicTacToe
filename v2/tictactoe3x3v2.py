@@ -344,26 +344,29 @@ class tictactoeFrameQLearning(tictactoeFrame):
 				self.stateValues(self.game.player2.previousState)
 				self.game.player2.update("L",state, -150)
 
-				self.prettyPrint(self.game.player2.previousState)
-				self.prettyPrint(state)
-				self.stateValues(self.game.player2.previousState)
+				## FOR DEBUGGING ##
+				# self.prettyPrint(self.game.player2.previousState)
+				# self.prettyPrint(state)
+				# self.stateValues(self.game.player2.previousState)
 				
-				print self.game.player2.previousAction
-				print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
-				# print self.game.qvalues
+				# print self.game.player2.previousAction
+				# print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
+				
 
 			elif self.game.gameWon()=="D":
 				self.game.player2.update("D",state, 60)
 				self.dispText.SetLabel("Match Drawn")
-				# print self.game.qvalues
+				
 			else:
-				print "here"
+				
 				self.stateValues(self.game.player2.previousState)
 				self.game.player2.update("C",state, 30) #living reward
-				self.prettyPrint(self.game.player2.previousState)
-				self.prettyPrint(state)
-				print self.game.player2.previousAction
-				print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
+				
+				## FOR DEBUGGING ##
+				# self.prettyPrint(self.game.player2.previousState)
+				# self.prettyPrint(state)
+				# print self.game.player2.previousAction
+				# print self.game.player2.qvalues[(self.game.player2.previousState,self.game.player2.previousAction)]
 
 				self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
 				self.dispText.SetLabel("Player 2 turn")
@@ -381,13 +384,12 @@ class tictactoeFrameQLearning(tictactoeFrame):
 					self.game.player2.update("W",newState,100)
 					self.player2Wins+=1
 					self.player2Stat.SetLabel("Player 2 : "+str(self.player2Wins))
-					# print self.game.qvalues
+					
 
 				elif self.game.gameWon()=="D":
 					self.dispText.SetLabel("Match Drawn")
 					self.game.player2.update("D",newState,60)
-					# print self.game.qvalues
-
+					
 				else:
 					self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
 					self.dispText.SetLabel("Player 1 turn")
@@ -434,6 +436,14 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 				
 				self.game.player2.update("L",state, -150)
 
+				## FOR DEBUGGING ##
+				# currentWeights = self.game.player2.weights[:]
+				# self.prettyPrint()
+				# self.diffWeights(currentWeights)
+				# self.printWeights2(currentWeights)
+				# self.printWeights()
+				# self.printFeatures(state)
+
 				
 
 			elif self.game.gameWon()=="D":
@@ -445,11 +455,12 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 
 				self.game.player2.update("C",state, 30) #living reward
 				
-				
+				## FOR DEBUGGING ##
+				# self.prettyPrint()
 				# self.diffWeights(currentWeights)
 				# self.printWeights2(currentWeights)
 				# self.printWeights()
-				# self.printFeatures(state)
+				# self.printFeatures(newState)
 				
 
 				self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
@@ -457,14 +468,6 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 
 				state = "".join(self.game.gridValues)
 				action = self.game.player2.getAction(state)
-
-				# self.printWeights()
-				# self.printFeatures(state)
-				
-				# self.stateValues2(state)
-
-
-
 
 				self.gameButtons[action].SetLabel("O")
 				self.game.gridValues[action]="O"
@@ -476,6 +479,9 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 					self.game.player2.update("W",newState,100)
 					self.player2Wins+=1
 					self.player2Stat.SetLabel("Player 2 : "+str(self.player2Wins))
+
+					## FOR DEBUGGING ##
+					# self.prettyPrint()
 					# self.diffWeights(currentWeights)
 					# self.printWeights2(currentWeights)
 					# self.printWeights()
@@ -485,12 +491,14 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 				elif self.game.gameWon()=="D":
 					self.dispText.SetLabel("Match Drawn")
 					self.game.player2.update("D",newState,60)
+
+					## FOR DEBUGGING ##
+					# self.prettyPrint()
 					# self.diffWeights(currentWeights)
 					# self.printWeights2(currentWeights)
 					# self.printWeights()
 					# self.printFeatures(state)
 					
-
 				else:
 					self.game.currentPlayer = self.changePlayer(self.game.currentPlayer)
 					self.dispText.SetLabel("Player 1 turn")
@@ -499,23 +507,25 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 			print "invalid action"
 			event.Skip()
 	
+
+	
 	def printFeatures(self,state):
 
 		features = self.game.player2.getFeatures(state,self.game.player2.previousAction)
 
 		print "################  Features ######################3"
-		print "Singleton featuers"
-		print features[0:9]
+		# print "Singleton featuers"
+		# print features[0:9]
 		# print "Winning position for player"
 		# print features[9:18]
 		# print "Winning position for opponent"
 		# print features[18:27]
 		# print "Winning move"
 		# print features[27:29]
-		# print "Winning position for player"
-		# print features[29:38]
-		# print "Winning position for opponent"
-		# print features[38:47]
+		print "Winning position for player"
+		print features[0:9]
+		print "Winning position for opponent"
+		print features[9:18]
 
 
 	def diffWeights(self,currentWeights):
@@ -528,49 +538,50 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 			diff.append(self.game.player2.weights[i] - currentWeights[i])
 
 		print "################  DIFF in features ######################3"
-		print "Singleton featuers"
-		print [round(i,2) for i in diff[0:9]]
+		# print "Singleton featuers"
+		# print [round(i,2) for i in diff[0:9]]
 		# print "Winning position for player"
 		# print [round(i,2) for i in diff[9:18]]
 		# print "Winning position for opponent"
 		# print [round(i,2) for i in diff[18:27]]
-		# print "Winning move"
-		# print [round(i,2) for i in diff[27:29]]
-		# print "Winning position for player"
-		# print [round(i,2) for i in diff[29:38]]
+		print "Winning move for player"
+		print [round(i,2) for i in diff[0:9]]
+		print "Blocking winning position for opponent"
+		print [round(i,2) for i in diff[9:18]]
 		# print "Winning position for opponent"
 		# print [round(i,2) for i in diff[38:47]]
 
 	def printWeights2(self,currentWeights):
 
-		print "Singleton featuers"
-		print [round(i,2) for i in currentWeights[0:9]]
+		# print "Singleton featuers"
+		# print [round(i,2) for i in currentWeights[0:9]]
 		# print "Winning position for player"
 		# print [round(i,2) for i in currentWeights[9:18]]
 		# print "Winning position for opponent"
 		# print [round(i,2) for i in currentWeights[18:27]]
 		# print "Winning move"
 		# print [round(i,2) for i in currentWeights[27:29]]
-		# print "Winning position for player"
-		# print [round(i,2) for i in currentWeights[29:38]]
-		# print "Winning position for opponent"
-		# print [round(i,2) for i in currentWeights[38:47]]
+		print "################  CurrentWeights ######################3"
+		print "Winning position for player"
+		print [round(i,2) for i in currentWeights[0:9]]
+		print "Winning position for opponent"
+		print [round(i,2) for i in currentWeights[9:18]]
 
 	def printWeights(self):
 
 		print "################  Weights ######################3"
-		print "Singleton featuers"
-		print [round(i,2) for i in self.game.player2.weights[0:9]]
+		# print "Singleton featuers"
+		# print [round(i,2) for i in self.game.player2.weights[0:9]]
 		# print "Winning position for player"
 		# print [round(i,2) for i in self.game.player2.weights[9:18]]
 		# print "Winning position for opponent"
 		# print [round(i,2) for i in self.game.player2.weights[18:27]]
 		# print "Winning move"
 		# print [round(i,2) for i in self.game.player2.weights[27:29]]
-		# print "Winning position for player"
-		# print [round(i,2) for i in self.game.player2.weights[29:38]]
-		# print "Winning position for opponent"
-		# print [round(i,2) for i in self.game.player2.weights[38:47]]
+		print "Winning position for player"
+		print [round(i,2) for i in self.game.player2.weights[0:9]]
+		print "Winning position for opponent"
+		print [round(i,2) for i in self.game.player2.weights[9:18]]
 
 	def prettyPrint(self):
 		print self.game.gridValues[0:3]

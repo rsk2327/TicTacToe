@@ -419,7 +419,7 @@ class ApproxQLearningAgent():
 		self.weights=[]
 
 		if self.gridSize==3:
-			for i in range(9):
+			for i in range(18):                     #CHANGE NUMBER OF FEATURES HERE!!!!!!
 				self.weights.append(0)
 		elif self.gridSize==4:
 			for i in range(82):
@@ -482,7 +482,7 @@ class ApproxQLearningAgent():
 		chooseRandomAction = flipCoin(self.epsilon)
 
 		if chooseRandomAction == True:
-			
+			# print "Random Chosen"
 			action = choice(legalActions)
 		else:
 			
@@ -506,23 +506,23 @@ class ApproxQLearningAgent():
 
 
 		state = self.previousState
-		print "Current State"
-		self.prettyPrint(state)
+		# print "Current State"
+		# self.prettyPrint(state)
 		action = self.previousAction
-		print "Current Action : "+ str(action)
+		# print "Current Action : "+ str(action)
 		features = self.getFeatures(state,action)
-		print "Current Features"
-		print features
+		# print "Current Features"
+		# print features
 
 		diff = (reward + self.discount*self.computeValueFromQValues(nextState)) - self.getQValue(state,action)
 
-		print "Current weights"
-		print self.weights
+		# print "Current weights"
+		# print self.weights
 		for i in range(len(features)):
 			self.weights[i] += self.alpha*diff*features[i]
 
-		print "Updated weights"
-		print self.weights
+		# print "Updated weights"
+		# print self.weights
 		
 		return None
 
@@ -625,64 +625,74 @@ class ApproxQLearningAgent():
 		elif self.gridSize==3:
 			######## for gridSize 3 ###########################
 			if state=="":
-				for i in range(9):
+				for i in range(18):
 					features.append(0)
 
 				return features
 
-			# #Singleton features
-			# for i in state:
-			# 	if i=="O":
-			# 		features.append(1)
-			# 	else:
-			# 		features.append(0)
 
-			# #Winning position for player
+			
+			#Winning position for the opponent
 			# for i in range(9):
 
 			# 	count=0
 			# 	for combo in grid3CheckList[i]:
 			# 		val1,val2 = combo
-					
-			# 		if state[val1]==state[val2] and state[val1]=="O" and state[i]=="-":
+			# 		if state[val1]==state[val2] and state[val1]=="X" and state[i]=="-":
 			# 			count+=1
-			# 	features.append(count) #Each feature represents the number of possible winning positions for the player from this position
-			
-			#Winning position for the opponent
-			for i in range(9):
+			# 	features.append(count) #Each feature represents the number of possible winning positions for the opponent from this position
 
+			#Blocking opponents winning move
+
+			# for i in range(9):
+
+			# 	count=0
+			# 	for combo in grid3CheckList[i]:
+			# 		val1,val2 = combo
+			# 		if state[val1]==state[val2] and state[val1]=="X" and state[i]=="-" and action == i:
+			# 			count=1
+			# 	features.append(count) #Each feature represents the number of possible winning positions for the opponent from this position
+
+			# #For not blocking an opponents move
+			# for i in range(9):
+
+			# 	count=0
+			# 	for combo in grid3CheckList[i]:
+			# 		val1,val2 = combo
+			# 		if state[val1]==state[val2] and state[val1]=="X" and state[i]=="-" and action != i:
+			# 			count=1
+			# 	features.append(count) #Each feature represents the number of possible winning positions for the opponent from this position
+			
+			newState = state[0:action]+"O"+state[(action+1):]
+
+
+			#Winning move for player i.e. After having taken the action, are there any positions that are now winning positions for the player
+			for i in range(9):
+				count = 0
+				for combo in grid3CheckList[i]:
+					val1,val2 = combo
+					
+					if newState[val1]==newState[val2] and newState[val1]=="O" and newState[i]=="-":
+						count+=1
+				if count>0:
+					features.append(1)
+				else:
+					features.append(0)
+
+			#Blocking winning move of opponent i.e Any positions that are potential winning positions for the opponent
+			for i in range(9):
+				
 				count=0
 				for combo in grid3CheckList[i]:
 					val1,val2 = combo
-					if state[val1]==state[val2] and state[val1]=="X" and state[i]=="-":
+					
+				
+					if newState[val1]==newState[val2] and newState[val1]=="X" and newState[i]=="-":
 						count+=1
-				features.append(count) #Each feature represents the number of possible winning positions for the opponent from this position
-
-			
-			# newState = state[0:action]+"O"+state[(action+1):]
-
-
-			# #Winning move
-			# for combo in grid3CheckList[action]:
-			# 	val1,val2 = combo
-			# 	count=0
-			# 	if newState[val1]==newState[val2] and newState[val1]=="O" and newState[i]=="-":
-			# 		count+=1
-			# if count>0:
-			# 	features.append(1)
-			# else:
-			# 	features.append(0)
-
-			# #Blocking winning move of opponent
-			# for combo in grid3CheckList[action]:
-			# 	val1,val2 = combo
-			# 	count=0
-			# 	if newState[val1]==newState[val2] and newState[val1]=="X" and newState[i]=="-":
-			# 		count+=1
-			# if count>0:
-			# 	features.append(1)
-			# else:
-			# 	features.append(0)
+				if count>0:
+					features.append(1)
+				else:
+					features.append(0)
 
 
 			# #Winning position for player after taking action

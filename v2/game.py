@@ -49,7 +49,7 @@ class Game():
 
 		print "gridSize :" + str(gridSize)
 		self.player1 = RandomAction(gridSize)
-		self.player2 = QLearningAgent(gridSize) #the type of agent that you are training
+		self.player2 = ApproxQLearningAgent(gridSize) #the type of agent that you are training
 		self.gridSize = gridSize
 		self.valuesEntered=0
 		self.isActive=True
@@ -118,6 +118,8 @@ class Game():
 		return None
 
 	def prettyPrint(self,state):
+		""" Prints the current state in an easy to understand form
+			Useful while debugging"""
 
 		for i in range(self.gridSize):
 			print(state[i*self.gridSize:(i+1)*self.gridSize])
@@ -126,6 +128,7 @@ class Game():
 
 
 	def train(self):
+		""" Runs one iteration of a tic-tac-toe game"""
 
 		
 		while self.isActive==True:
