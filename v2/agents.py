@@ -301,7 +301,7 @@ class QLearningAgent2():
 		if possibleActions==[]:
 			return None
 		else:
-			maxVal=-999
+			maxVal=-9999999999.0
 			maxAction=""
 
 			for action in possibleActions:

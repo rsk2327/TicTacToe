@@ -49,7 +49,7 @@ class Game():
 
 		print "gridSize :" + str(gridSize)
 		self.player1 = RandomAction(gridSize)
-		self.player2 = ApproxQLearningAgent(gridSize) #the type of agent that you are training
+		self.player2 = QLearningAgent2(gridSize)    #the type of agent that you are training
 		self.gridSize = gridSize
 		self.valuesEntered=0
 		self.isActive=True
@@ -158,6 +158,8 @@ class Game():
 
 				state = newState
 				player2Action = self.player2.getAction(state)
+				# print "player 2 action"
+				# print player2Action
 				self.gridValues[player2Action]="O"
 				self.valuesEntered+=1
 				newState = "".join(self.gridValues)

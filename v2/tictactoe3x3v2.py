@@ -508,7 +508,7 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 			event.Skip()
 	
 
-	
+
 	def printFeatures(self,state):
 
 		features = self.game.player2.getFeatures(state,self.game.player2.previousAction)
@@ -600,7 +600,7 @@ class tictactoeFrameApproxQLearning(tictactoeFrame):
 if __name__ == '__main__':
   
     app = wx.App()
-    tictactoeFrameApproxQLearning(None, title='Tic Tac Toe')
+    tictactoeFrameQLearning(None, title='Tic Tac Toe')
     app.MainLoop()
 
 
