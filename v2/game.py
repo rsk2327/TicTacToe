@@ -49,7 +49,7 @@ class Game():
 
 		print "gridSize :" + str(gridSize)
 		self.player1 = RandomAction(gridSize)
-		self.player2 = QLearningAgent2(gridSize)    #the type of agent that you are training
+		self.player2 = ApproxQLearningAgent(gridSize)    #the type of agent that you are training
 		self.gridSize = gridSize
 		self.valuesEntered=0
 		self.isActive=True
@@ -146,7 +146,7 @@ class Game():
 				print "***************"
 			if self.gameWon()=="W":
 				self.player1Wins+=1
-				self.player1.update("W",newState,100)
+				self.player1.update("W",newState,300)
 				self.player2.update("L",state,-150)
 				winner=1
 			elif self.gameWon()=="D":
@@ -172,7 +172,7 @@ class Game():
 				if self.gameWon()=="W":
 					self.player2Wins+=1
 					self.player1.update("L",state,-150)
-					self.player2.update("W",newState,100)
+					self.player2.update("W",newState,300)
 					winner=2
 				elif self.gameWon()=="D":
 					self.player1.update("D",state,60)
